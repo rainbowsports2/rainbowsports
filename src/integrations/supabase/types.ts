@@ -76,6 +76,7 @@ export type Database = {
           postal_code: string
           status: Database["public"]["Enums"]["order_status"]
           total: number
+          tracking_number: string | null
           updated_at: string
           user_id: string | null
         }
@@ -92,6 +93,7 @@ export type Database = {
           postal_code: string
           status?: Database["public"]["Enums"]["order_status"]
           total: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -108,6 +110,7 @@ export type Database = {
           postal_code?: string
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -214,6 +217,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_tracking_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
