@@ -19,6 +19,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [featured, setFeatured] = useState<Product[]>([]);
+  const [slideIdx, setSlideIdx] = useState(0);
 
   useEffect(() => {
     supabase
@@ -26,16 +27,40 @@ function Index() {
       .select("*")
       .eq("is_active", true)
       .order("created_at", { ascending: false })
-      .limit(4)
+      .limit(8)
       .then(({ data }) => setFeatured((data ?? []) as Product[]));
   }, []);
+
+  // Collect recent jersey images for the hero slider
+  const heroSlides = featured
+    .map((p) => p.images?.[0])
+    .filter((s): s is string => !!s)
+    .slice(0, 6);
+
+  useEffect(() => {
+    if (heroSlides.length < 2) return;
+    const t = setInterval(() => setSlideIdx((i) => (i + 1) % heroSlides.length), 3500);
+    return () => clearInterval(t);
+  }, [heroSlides.length]);
 
   return (
     <div>
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImg} alt="Sports jerseys" className="h-full w-full object-cover opacity-60 scale-105 animate-float" width={1600} height={1024} />
+          {heroSlides.length > 0 ? (
+            heroSlides.map((src, i) => (
+              <img
+                key={src + i}
+                src={src}
+                alt="Jersey"
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out ${i === slideIdx ? "opacity-60 scale-105 animate-float" : "opacity-0"}`}
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            ))
+          ) : (
+            <img src={heroImg} alt="Sports jerseys" className="h-full w-full object-cover opacity-60 scale-105 animate-float" width={1600} height={1024} />
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
         </div>
@@ -120,7 +145,7 @@ function Index() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featured.map((p) => <ProductCard key={p.id} product={p} />)}
+            {featured.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
       </section>
