@@ -11,6 +11,7 @@ export const Route = createFileRoute("/orders")({
 
 type Order = {
   id: string;
+  tracking_number: string | null;
   created_at: string;
   total: number;
   status: string;
@@ -29,7 +30,7 @@ function Orders() {
     if (!user) return;
     supabase
       .from("orders")
-      .select("id, created_at, total, status, payment_method, customer_name, city, order_items(product_name, quantity, size)")
+      .select("id, tracking_number, created_at, total, status, payment_method, customer_name, city, order_items(product_name, quantity, size)")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setOrders((data ?? []) as any);
@@ -68,6 +69,9 @@ function Orders() {
             <div key={o.id} className="rounded-lg border border-border bg-card p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
+                  {o.tracking_number && (
+                    <p className="font-display text-lg tracking-wider text-primary">{o.tracking_number}</p>
+                  )}
                   <p className="font-mono text-xs text-muted-foreground">#{o.id.slice(0, 8)}</p>
                   <p className="mt-1 text-sm">{new Date(o.created_at).toLocaleString()}</p>
                 </div>
