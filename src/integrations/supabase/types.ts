@@ -72,7 +72,11 @@ export type Database = {
           id: string
           notes: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status: Database["public"]["Enums"]["payment_status"]
           phone: string
+          phonepe_merchant_transaction_id: string | null
+          phonepe_response: Json | null
+          phonepe_transaction_id: string | null
           postal_code: string
           status: Database["public"]["Enums"]["order_status"]
           total: number
@@ -89,7 +93,11 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_status?: Database["public"]["Enums"]["payment_status"]
           phone: string
+          phonepe_merchant_transaction_id?: string | null
+          phonepe_response?: Json | null
+          phonepe_transaction_id?: string | null
           postal_code: string
           status?: Database["public"]["Enums"]["order_status"]
           total: number
@@ -106,7 +114,11 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_status?: Database["public"]["Enums"]["payment_status"]
           phone?: string
+          phonepe_merchant_transaction_id?: string | null
+          phonepe_response?: Json | null
+          phonepe_transaction_id?: string | null
           postal_code?: string
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
@@ -235,6 +247,7 @@ export type Database = {
         | "delivered"
         | "cancelled"
       payment_method: "cod" | "phonepe"
+      payment_status: "pending" | "paid" | "failed" | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -371,6 +384,7 @@ export const Constants = {
         "cancelled",
       ],
       payment_method: ["cod", "phonepe"],
+      payment_status: ["pending", "paid", "failed", "refunded"],
     },
   },
 } as const

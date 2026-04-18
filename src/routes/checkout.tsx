@@ -8,9 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { createGuestOrder } from "@/lib/order.functions";
+import { initiatePhonePePayment } from "@/lib/phonepe.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Smartphone, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Rainbow Sports" }] }),
@@ -27,11 +28,14 @@ const schema = z.object({
   notes: z.string().max(500).optional(),
 });
 
+type PaymentChoice = "cod" | "phonepe";
+
 function Checkout() {
   const { items, total, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [payment, setPayment] = useState<PaymentChoice>("cod");
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -67,6 +71,34 @@ function Checkout() {
       } = await supabase.auth.getSession();
       const currentUserId = session?.user?.id ?? null;
 
+      // PhonePe flow — uses server fn that bypasses RLS for both guest and logged in
+      if (payment === "phonepe") {
+        const result = await initiatePhonePePayment({
+          data: {
+            customer_name: form.customer_name,
+            phone: form.phone,
+            address: form.address,
+            city: form.city,
+            postal_code: form.postal_code,
+            guest_email: form.guest_email || null,
+            notes: form.notes || null,
+            total,
+            items,
+            user_id: currentUserId,
+            origin: window.location.origin,
+          },
+        });
+
+        if (result.trackingNumber) {
+          localStorage.setItem(`rainbowsports_tracking_${result.orderId}`, result.trackingNumber);
+        }
+        clear();
+        toast.success("Redirecting to PhonePe...");
+        window.location.href = result.redirectUrl;
+        return;
+      }
+
+      // COD flow
       if (!currentUserId) {
         const result = await createGuestOrder({
           data: {
@@ -77,11 +109,9 @@ function Checkout() {
             items,
           },
         });
-
-        if (typeof window !== "undefined" && result.trackingNumber) {
+        if (result.trackingNumber) {
           localStorage.setItem(`rainbowsports_tracking_${result.id}`, result.trackingNumber);
         }
-
         clear();
         toast.success("Order placed!");
         navigate({ to: "/order-success/$id", params: { id: result.id } });
@@ -102,6 +132,7 @@ function Checkout() {
           total,
           payment_method: "cod",
           status: "pending",
+          payment_status: "pending",
         })
         .select()
         .single();
@@ -184,12 +215,42 @@ function Checkout() {
             <Textarea id="notes" rows={2} value={form.notes} onChange={(e) => update("notes", e.target.value)} />
           </div>
 
-          <div className="rounded-md border border-primary/30 bg-primary/5 p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-primary" />
-              <p className="font-bold">Cash on Delivery</p>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">Pay in cash when your jersey arrives.</p>
+          <div className="space-y-3">
+            <h3 className="font-display text-xl">PAYMENT METHOD</h3>
+            <button
+              type="button"
+              onClick={() => setPayment("phonepe")}
+              className={`flex w-full items-center gap-3 rounded-md border p-4 text-left transition ${
+                payment === "phonepe"
+                  ? "border-primary bg-primary/5 shadow-glow"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <Smartphone className="h-5 w-5 text-primary" />
+              <div className="flex-1">
+                <p className="font-bold">PhonePe</p>
+                <p className="text-xs text-muted-foreground">Pay instantly via UPI / cards / wallet.</p>
+              </div>
+              <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                Online
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPayment("cod")}
+              className={`flex w-full items-center gap-3 rounded-md border p-4 text-left transition ${
+                payment === "cod"
+                  ? "border-primary bg-primary/5 shadow-glow"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <Wallet className="h-5 w-5 text-primary" />
+              <div className="flex-1">
+                <p className="font-bold">Cash on Delivery</p>
+                <p className="text-xs text-muted-foreground">Pay in cash when your jersey arrives.</p>
+              </div>
+              <CheckCircle2 className={`h-4 w-4 ${payment === "cod" ? "text-primary" : "text-transparent"}`} />
+            </button>
           </div>
         </div>
 
@@ -214,7 +275,11 @@ function Checkout() {
             size="lg"
             className="mt-6 h-12 w-full bg-gradient-primary font-bold uppercase tracking-wider text-primary-foreground shadow-glow"
           >
-            {submitting ? "Placing..." : "Place order (COD)"}
+            {submitting
+              ? "Processing..."
+              : payment === "phonepe"
+                ? "Pay with PhonePe"
+                : "Place order (COD)"}
           </Button>
         </div>
       </div>
