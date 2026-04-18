@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
+import { createGuestOrder } from "@/lib/order.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
@@ -61,15 +62,37 @@ function Checkout() {
     }
     setSubmitting(true);
     try {
-      // Get fresh session to ensure auth.uid() matches what we send
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const currentUserId = session?.user?.id ?? null;
+
+      if (!currentUserId) {
+        const result = await createGuestOrder({
+          data: {
+            ...form,
+            guest_email: form.guest_email || null,
+            notes: form.notes || null,
+            total,
+            items,
+          },
+        });
+
+        if (typeof window !== "undefined" && result.trackingNumber) {
+          localStorage.setItem(`rainbowsports_tracking_${result.id}`, result.trackingNumber);
+        }
+
+        clear();
+        toast.success("Order placed!");
+        navigate({ to: "/order-success/$id", params: { id: result.id } });
+        return;
+      }
 
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
           user_id: currentUserId,
-          guest_email: form.guest_email || null,
+          guest_email: null,
           customer_name: form.customer_name,
           phone: form.phone,
           address: form.address,
