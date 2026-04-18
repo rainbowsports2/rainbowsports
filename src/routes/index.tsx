@@ -10,7 +10,7 @@ import { YouTubeVideos } from "@/components/YouTubeVideos";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "JerseyHub — Premium Sports Jerseys, COD Available" },
+      { title: "Rainbow Sports — Premium Sports Jerseys, COD Available" },
       { name: "description", content: "Shop authentic football, basketball and cricket jerseys with Cash on Delivery." },
     ],
   }),

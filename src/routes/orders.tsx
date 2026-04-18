@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/orders")({
-  head: () => ({ meta: [{ title: "My orders — JerseyHub" }] }),
+  head: () => ({ meta: [{ title: "My orders — Rainbow Sports" }] }),
   component: Orders,
 });
 

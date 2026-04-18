@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Your cart — JerseyHub" }] }),
+  head: () => ({ meta: [{ title: "Your cart — Rainbow Sports" }] }),
   component: Cart,
 });
 

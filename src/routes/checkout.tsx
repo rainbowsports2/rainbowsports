@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — JerseyHub" }] }),
+  head: () => ({ meta: [{ title: "Checkout — Rainbow Sports" }] }),
   component: Checkout,
 });
 

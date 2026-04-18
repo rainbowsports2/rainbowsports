@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — JerseyHub" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Rainbow Sports" }] }),
   component: Auth,
 });
 
@@ -54,7 +54,7 @@ function Auth() {
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
       <h1 className="font-display text-5xl">{mode === "signin" ? "SIGN IN" : "JOIN"}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        {mode === "signin" ? "Welcome back to JerseyHub." : "Create an account to track orders."}
+        {mode === "signin" ? "Welcome back to Rainbow Sports." : "Create an account to track orders."}
       </p>
 
       <form onSubmit={submit} className="mt-8 space-y-4 rounded-lg border border-border bg-card p-6">
