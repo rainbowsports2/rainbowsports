@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/hero-jerseys.jpg";
 import { ProductCard, type Product } from "@/components/ProductCard";
+import { YouTubeVideos } from "@/components/YouTubeVideos";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -105,6 +106,9 @@ function Index() {
           </div>
         )}
       </section>
+
+      {/* YOUTUBE */}
+      <YouTubeVideos />
     </div>
   );
 }
