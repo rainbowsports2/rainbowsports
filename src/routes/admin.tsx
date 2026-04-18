@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth";
 import { Package, ShoppingCart } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — JerseyHub" }] }),
+  head: () => ({ meta: [{ title: "Admin — Rainbow Sports" }] }),
   component: AdminLayout,
 });
 

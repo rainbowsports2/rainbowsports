@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop Jerseys — JerseyHub" },
+      { title: "Shop Jerseys — Rainbow Sports" },
       { name: "description", content: "Browse all sports jerseys. Football, basketball, cricket and more." },
     ],
   }),

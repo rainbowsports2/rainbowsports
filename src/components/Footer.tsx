@@ -9,7 +9,7 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             Premium sports jerseys. Cash on Delivery available across India.
           </p>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} JerseyHub</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Rainbow Sports</p>
         </div>
       </div>
     </footer>

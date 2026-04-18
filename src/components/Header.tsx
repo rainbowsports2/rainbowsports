@@ -14,9 +14,9 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-primary shadow-glow">
-            <span className="font-display text-lg text-primary-foreground">JH</span>
+            <span className="font-display text-lg text-primary-foreground">RS</span>
           </div>
-          <span className="font-display text-2xl tracking-wide">JERSEY<span className="text-primary">HUB</span></span>
+          <span className="font-display text-2xl tracking-wide">RAINBOW<span className="text-primary"> SPORTS</span></span>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
