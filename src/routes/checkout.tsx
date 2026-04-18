@@ -61,10 +61,14 @@ function Checkout() {
     }
     setSubmitting(true);
     try {
+      // Get fresh session to ensure auth.uid() matches what we send
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUserId = session?.user?.id ?? null;
+
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
-          user_id: user?.id ?? null,
+          user_id: currentUserId,
           guest_email: form.guest_email || null,
           customer_name: form.customer_name,
           phone: form.phone,
