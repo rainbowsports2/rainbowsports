@@ -21,7 +21,7 @@ type CartCtx = {
 
 const Ctx = createContext<CartCtx | null>(null);
 
-const STORAGE_KEY = "jerseyhub_cart_v1";
+const STORAGE_KEY = "rainbowsports_cart_v1";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
