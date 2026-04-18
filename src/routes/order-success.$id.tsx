@@ -15,6 +15,16 @@ function OrderSuccess() {
   const [tracking, setTracking] = useState<string | null>(null);
 
   useEffect(() => {
+    const cachedTracking =
+      typeof window !== "undefined"
+        ? localStorage.getItem(`rainbowsports_tracking_${id}`)
+        : null;
+
+    if (cachedTracking) {
+      setTracking(cachedTracking);
+      return;
+    }
+
     supabase
       .from("orders")
       .select("tracking_number")
