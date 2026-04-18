@@ -117,4 +117,75 @@
     -webkit-text-stroke: 1px var(--color-foreground);
     color: transparent;
   }
+
+  /* Animated gradient text */
+  .text-gradient-animated {
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 3s linear infinite;
+  }
+
+  /* Floating */
+  .animate-float { animation: float 4s ease-in-out infinite; }
+
+  /* Pulse glow */
+  .animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+  /* Marquee */
+  .animate-marquee { animation: marquee 25s linear infinite; }
+
+  /* Slide up on enter */
+  .animate-slide-up { animation: slide-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  /* Bounce in */
+  .animate-bounce-in { animation: bounce-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+  /* Hover lift */
+  .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+  .hover-lift:hover { transform: translateY(-6px); box-shadow: var(--shadow-glow); }
+
+  /* Shimmer badge */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: shimmer 2.8s infinite;
+  }
+}
+
+@keyframes shine {
+  to { background-position: 200% center; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px oklch(0.65 0.25 25 / 0.4); }
+  50% { box-shadow: 0 0 50px oklch(0.65 0.25 25 / 0.8); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounce-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
 }

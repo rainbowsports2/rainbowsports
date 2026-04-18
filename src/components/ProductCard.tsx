@@ -19,7 +19,7 @@ export function ProductCard({ product }: { product: Product }) {
     <Link
       to="/product/$id"
       params={{ id: product.id }}
-      className="group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:border-primary hover:shadow-glow"
+      className="group block overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary hover:shadow-glow hover:-translate-y-2"
     >
       <div className="aspect-square overflow-hidden bg-muted">
         {img ? (
