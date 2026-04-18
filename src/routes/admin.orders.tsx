@@ -11,6 +11,7 @@ const STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"] a
 
 type Order = {
   id: string;
+  tracking_number: string | null;
   created_at: string;
   customer_name: string;
   phone: string;
@@ -64,6 +65,9 @@ function AdminOrders() {
             <div key={o.id} className="rounded-lg border border-border bg-card p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
+                  {o.tracking_number && (
+                    <p className="font-display text-lg tracking-wider text-primary">{o.tracking_number}</p>
+                  )}
                   <p className="font-mono text-xs text-muted-foreground">#{o.id.slice(0, 8)}</p>
                   <p className="mt-1 font-display text-xl">{o.customer_name}</p>
                   <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</p>
