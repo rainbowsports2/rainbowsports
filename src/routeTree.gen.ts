@@ -18,8 +18,10 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as PaymentFailedIdRouteImport } from './routes/payment-failed.$id'
 import { Route as OrderSuccessIdRouteImport } from './routes/order-success.$id'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as ApiPhonepeCallbackRouteImport } from './routes/api.phonepe.callback'
 
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
@@ -66,6 +68,11 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentFailedIdRoute = PaymentFailedIdRouteImport.update({
+  id: '/payment-failed/$id',
+  path: '/payment-failed/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrderSuccessIdRoute = OrderSuccessIdRouteImport.update({
   id: '/order-success/$id',
   path: '/order-success/$id',
@@ -75,6 +82,11 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
   getParentRoute: () => AdminRoute,
+} as any)
+const ApiPhonepeCallbackRoute = ApiPhonepeCallbackRouteImport.update({
+  id: '/api/phonepe/callback',
+  path: '/api/phonepe/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -87,8 +99,10 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/order-success/$id': typeof OrderSuccessIdRoute
+  '/payment-failed/$id': typeof PaymentFailedIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/phonepe/callback': typeof ApiPhonepeCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,8 +113,10 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/order-success/$id': typeof OrderSuccessIdRoute
+  '/payment-failed/$id': typeof PaymentFailedIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin': typeof AdminIndexRoute
+  '/api/phonepe/callback': typeof ApiPhonepeCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,8 +129,10 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/order-success/$id': typeof OrderSuccessIdRoute
+  '/payment-failed/$id': typeof PaymentFailedIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/phonepe/callback': typeof ApiPhonepeCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,8 +146,10 @@ export interface FileRouteTypes {
     | '/shop'
     | '/admin/orders'
     | '/order-success/$id'
+    | '/payment-failed/$id'
     | '/product/$id'
     | '/admin/'
+    | '/api/phonepe/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,8 +160,10 @@ export interface FileRouteTypes {
     | '/shop'
     | '/admin/orders'
     | '/order-success/$id'
+    | '/payment-failed/$id'
     | '/product/$id'
     | '/admin'
+    | '/api/phonepe/callback'
   id:
     | '__root__'
     | '/'
@@ -153,8 +175,10 @@ export interface FileRouteTypes {
     | '/shop'
     | '/admin/orders'
     | '/order-success/$id'
+    | '/payment-failed/$id'
     | '/product/$id'
     | '/admin/'
+    | '/api/phonepe/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -166,7 +190,9 @@ export interface RootRouteChildren {
   OrdersRoute: typeof OrdersRoute
   ShopRoute: typeof ShopRoute
   OrderSuccessIdRoute: typeof OrderSuccessIdRoute
+  PaymentFailedIdRoute: typeof PaymentFailedIdRoute
   ProductIdRoute: typeof ProductIdRoute
+  ApiPhonepeCallbackRoute: typeof ApiPhonepeCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -234,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payment-failed/$id': {
+      id: '/payment-failed/$id'
+      path: '/payment-failed/$id'
+      fullPath: '/payment-failed/$id'
+      preLoaderRoute: typeof PaymentFailedIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order-success/$id': {
       id: '/order-success/$id'
       path: '/order-success/$id'
@@ -247,6 +280,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/orders'
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/api/phonepe/callback': {
+      id: '/api/phonepe/callback'
+      path: '/api/phonepe/callback'
+      fullPath: '/api/phonepe/callback'
+      preLoaderRoute: typeof ApiPhonepeCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -272,8 +312,19 @@ const rootRouteChildren: RootRouteChildren = {
   OrdersRoute: OrdersRoute,
   ShopRoute: ShopRoute,
   OrderSuccessIdRoute: OrderSuccessIdRoute,
+  PaymentFailedIdRoute: PaymentFailedIdRoute,
   ProductIdRoute: ProductIdRoute,
+  ApiPhonepeCallbackRoute: ApiPhonepeCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
