@@ -9,51 +9,45 @@ export type YouTubeVideo = {
 };
 
 const CHANNEL_HANDLE = "rsrainbowsports";
-// Known channel ID for @rsrainbowsports — used as fallback if resolution fails.
-const FALLBACK_CHANNEL_ID = "UCOeO4lIwyDxMbW4YFq1J8eg";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-type CacheEntry = { videos: YouTubeVideo[]; error: string | null; at: number };
+type CacheEntry = { videos: YouTubeVideo[]; at: number };
 let cache: CacheEntry | null = null;
 
 const UA =
-  "Mozilla/5.0 (compatible; LovableBot/1.0; +https://lovable.dev)";
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
-async function resolveChannelId(): Promise<string | null> {
-  try {
-    const res = await fetch(`https://www.youtube.com/@${CHANNEL_HANDLE}`, {
-      headers: { "User-Agent": UA },
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-    const m =
-      html.match(/"channelId":"(UC[A-Za-z0-9_-]{20,})"/) ||
-      html.match(/"externalId":"(UC[A-Za-z0-9_-]{20,})"/) ||
-      html.match(/channel\/(UC[A-Za-z0-9_-]{20,})/);
-    return m ? m[1] : null;
-  } catch {
-    return null;
-  }
-}
-
-function parseFeed(xml: string): YouTubeVideo[] {
-  const entries = xml.split("<entry>").slice(1);
+/**
+ * Scrape the channel's /videos page and pull videoId + title pairs out of the
+ * embedded ytInitialData JSON. The public RSS feed (/feeds/videos.xml) often
+ * returns 404/500 from server IPs, so we parse the page HTML instead.
+ */
+function parseChannelHtml(html: string): YouTubeVideo[] {
   const videos: YouTubeVideo[] = [];
-  for (const e of entries) {
-    const id = e.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
-    const title = e.match(/<title>([^<]+)<\/title>/)?.[1];
-    const published = e.match(/<published>([^<]+)<\/published>/)?.[1];
-    if (!id || !title) continue;
+  const seen = new Set<string>();
+
+  // Match each videoRenderer block: capture videoId, title text, and published
+  const re =
+    /"videoId":"([A-Za-z0-9_-]{11})"[\s\S]{0,1500}?"title":\{"runs":\[\{"text":"([^"]+)"\}\][\s\S]{0,400}?(?:"publishedTimeText":\{"simpleText":"([^"]+)"\})?/g;
+
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) !== null) {
+    const id = m[1];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const title = m[2]
+      .replace(/\\u0026/g, "&")
+      .replace(/\\"/g, '"')
+      .replace(/\\\//g, "/");
+    const published = m[3] ?? "";
     videos.push({
       id,
-      title: title
-        .replace(/&amp;/g, "&")
-        .replace(/&#39;/g, "'")
-        .replace(/&quot;/g, '"'),
+      title,
       url: `https://www.youtube.com/watch?v=${id}`,
       thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-      published: published ?? "",
+      published,
     });
+    if (videos.length >= 12) break;
   }
   return videos;
 }
@@ -62,26 +56,38 @@ export const getChannelVideos = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ videos: YouTubeVideo[]; error: string | null }> => {
     // Serve from 24h cache when fresh.
     if (cache && Date.now() - cache.at < CACHE_TTL_MS && cache.videos.length > 0) {
-      return { videos: cache.videos, error: cache.error };
+      return { videos: cache.videos, error: null };
     }
 
     try {
-      const channelId = (await resolveChannelId()) ?? FALLBACK_CHANNEL_ID;
       const res = await fetch(
-        `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`,
-        { headers: { "User-Agent": UA } }
+        `https://www.youtube.com/@${CHANNEL_HANDLE}/videos`,
+        {
+          headers: {
+            "User-Agent": UA,
+            "Accept-Language": "en-US,en;q=0.9",
+          },
+        }
       );
+
       if (!res.ok) {
-        const err = `YouTube feed error (${res.status})`;
-        // If we have a stale cache, return it instead of failing.
         if (cache && cache.videos.length > 0) {
           return { videos: cache.videos, error: null };
         }
-        return { videos: [], error: err };
+        return { videos: [], error: `YouTube returned ${res.status}` };
       }
-      const xml = await res.text();
-      const videos = parseFeed(xml).slice(0, 12);
-      cache = { videos, error: null, at: Date.now() };
+
+      const html = await res.text();
+      const videos = parseChannelHtml(html);
+
+      if (videos.length === 0) {
+        if (cache && cache.videos.length > 0) {
+          return { videos: cache.videos, error: null };
+        }
+        return { videos: [], error: "No videos found on channel." };
+      }
+
+      cache = { videos, at: Date.now() };
       return { videos, error: null };
     } catch (err) {
       console.error("YouTube fetch failed:", err);
