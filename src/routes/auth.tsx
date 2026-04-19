@@ -20,7 +20,11 @@ function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
   const navigate = useNavigate();
+
+  const isBannedError = (msg: string) =>
+    /banned|blocked|disabled/i.test(msg);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +48,26 @@ function Auth() {
       }
       navigate({ to: "/" });
     } catch (e: any) {
-      toast.error(e?.message ?? "Auth failed");
+      const msg = e?.message ?? "Auth failed";
+      toast.error(isBannedError(msg) ? "This account has been blocked. Contact support." : msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendReset = async () => {
+    if (!emailSchema.safeParse(email).success)
+      return toast.error("Enter your account email above first");
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Reset link sent. Check your inbox.");
+      setForgotOpen(false);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send reset email");
     } finally {
       setLoading(false);
     }
@@ -71,13 +94,42 @@ function Auth() {
           {loading ? "..." : mode === "signin" ? "Sign in" : "Create account"}
         </Button>
 
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="w-full text-sm text-muted-foreground hover:text-foreground"
-        >
-          {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
-        </button>
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+          </button>
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={() => setForgotOpen((v) => !v)}
+              className="text-sm text-primary hover:underline"
+            >
+              Forgot password?
+            </button>
+          )}
+        </div>
+
+        {forgotOpen && mode === "signin" && (
+          <div className="rounded-md border border-border bg-background/40 p-3 text-sm">
+            <p className="text-muted-foreground">
+              We'll email <span className="text-foreground">{email || "your address"}</span> a password reset link.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={sendReset}
+              className="mt-3 w-full"
+            >
+              Send reset link
+            </Button>
+          </div>
+        )}
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
