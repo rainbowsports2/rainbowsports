@@ -26,6 +26,9 @@ export function Header() {
           <Link to="/shop" className="text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "!text-foreground" }}>
             Shop
           </Link>
+          <Link to="/custom" className="text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "!text-foreground" }}>
+            Custom
+          </Link>
           {user && (
             <Link to="/orders" className="text-sm font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "!text-foreground" }}>
               My Orders
