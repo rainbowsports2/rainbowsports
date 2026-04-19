@@ -11,7 +11,8 @@ import { createGuestOrder } from "@/lib/order.functions";
 import { initiatePhonePePayment } from "@/lib/phonepe.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, Smartphone, Wallet } from "lucide-react";
+import { CheckCircle2, Smartphone, Wallet, QrCode, Copy } from "lucide-react";
+import bharatpeQr from "@/assets/bharatpe-qr.jpg";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Rainbow Sports" }] }),
@@ -28,7 +29,10 @@ const schema = z.object({
   notes: z.string().max(500).optional(),
 });
 
-type PaymentChoice = "cod" | "phonepe";
+type PaymentChoice = "cod" | "phonepe" | "bharatpe";
+
+const BHARATPE_UPI = "BHARATPE09900343083@yesbankltd";
+const BHARATPE_PAYEE_NAME = "Rainbow Sports";
 
 function Checkout() {
   const { items, total, clear } = useCart();
@@ -58,6 +62,17 @@ function Checkout() {
 
   const update = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  const upiLink = `upi://pay?pa=${encodeURIComponent(BHARATPE_UPI)}&pn=${encodeURIComponent(BHARATPE_PAYEE_NAME)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent("Rainbow Sports order")}`;
+
+  const copyUpi = async () => {
+    try {
+      await navigator.clipboard.writeText(BHARATPE_UPI);
+      toast.success("UPI ID copied");
+    } catch {
+      toast.error("Could not copy");
+    }
+  };
+
   const placeOrder = async () => {
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
@@ -71,7 +86,7 @@ function Checkout() {
       } = await supabase.auth.getSession();
       const currentUserId = session?.user?.id ?? null;
 
-      // PhonePe flow — uses server fn that bypasses RLS for both guest and logged in
+      // PhonePe flow
       if (payment === "phonepe") {
         const result = await initiatePhonePePayment({
           data: {
@@ -98,13 +113,17 @@ function Checkout() {
         return;
       }
 
-      // COD flow
+      // BharatPe / UPI manual flow — record order as pending and let user pay via QR/UPI
+      const orderNotes = (form.notes ? form.notes + " | " : "") +
+        (payment === "bharatpe" ? `Paid via BharatPe UPI (${BHARATPE_UPI})` : "");
+
+      // COD or BharatPe — guest path
       if (!currentUserId) {
         const result = await createGuestOrder({
           data: {
             ...form,
             guest_email: form.guest_email || null,
-            notes: form.notes || null,
+            notes: orderNotes || null,
             total,
             items,
           },
@@ -113,11 +132,12 @@ function Checkout() {
           localStorage.setItem(`rainbowsports_tracking_${result.id}`, result.trackingNumber);
         }
         clear();
-        toast.success("Order placed!");
+        toast.success(payment === "bharatpe" ? "Order placed! Complete UPI payment." : "Order placed!");
         navigate({ to: "/order-success/$id", params: { id: result.id } });
         return;
       }
 
+      // Logged-in COD or BharatPe path
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -128,7 +148,7 @@ function Checkout() {
           address: form.address,
           city: form.city,
           postal_code: form.postal_code,
-          notes: form.notes || null,
+          notes: orderNotes || null,
           total,
           payment_method: "cod",
           status: "pending",
@@ -152,7 +172,7 @@ function Checkout() {
       if (itemsErr) throw itemsErr;
 
       clear();
-      toast.success("Order placed!");
+      toast.success(payment === "bharatpe" ? "Order placed! Complete UPI payment." : "Order placed!");
       navigate({ to: "/order-success/$id", params: { id: order.id } });
     } catch (e: any) {
       console.error(e);
@@ -235,6 +255,62 @@ function Checkout() {
                 Online
               </span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setPayment("bharatpe")}
+              className={`flex w-full items-center gap-3 rounded-md border p-4 text-left transition ${
+                payment === "bharatpe"
+                  ? "border-primary bg-primary/5 shadow-glow"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <QrCode className="h-5 w-5 text-primary" />
+              <div className="flex-1">
+                <p className="font-bold">BharatPe / UPI</p>
+                <p className="text-xs text-muted-foreground">Scan QR or pay to UPI ID — any UPI app.</p>
+              </div>
+              <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                UPI
+              </span>
+            </button>
+
+            {payment === "bharatpe" && (
+              <div className="rounded-md border border-border bg-background p-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr] sm:items-center">
+                  <img
+                    src={bharatpeQr}
+                    alt="BharatPe UPI QR code for Rainbow Sports"
+                    className="mx-auto w-44 rounded-md border border-border bg-white"
+                  />
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">UPI ID</p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <code className="flex-1 break-all rounded bg-muted px-2 py-1 text-xs">{BHARATPE_UPI}</code>
+                        <Button type="button" size="sm" variant="outline" onClick={copyUpi}>
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Amount</p>
+                      <p className="font-display text-lg">₹{total.toFixed(0)}</p>
+                    </div>
+                    <a
+                      href={upiLink}
+                      className="inline-flex w-full items-center justify-center rounded-md border border-primary bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary hover:bg-primary/20 sm:w-auto"
+                    >
+                      Open UPI app
+                    </a>
+                    <p className="text-[11px] leading-relaxed text-muted-foreground">
+                      Scan the QR or pay to the UPI ID. After paying, click <b>Place order</b> below — we'll confirm payment manually.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => setPayment("cod")}
@@ -279,7 +355,9 @@ function Checkout() {
               ? "Processing..."
               : payment === "phonepe"
                 ? "Pay with PhonePe"
-                : "Place order (COD)"}
+                : payment === "bharatpe"
+                  ? "I've paid — Place order"
+                  : "Place order (COD)"}
           </Button>
         </div>
       </div>
