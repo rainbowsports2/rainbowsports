@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { Package, ShoppingCart } from "lucide-react";
+import { Package, ShoppingCart, Users } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Rainbow Sports" }] }),
@@ -48,6 +48,7 @@ SELECT id, 'admin' FROM auth.users WHERE email = 'you@example.com';`}
       <nav className="mb-8 flex gap-2 border-b border-border">
         <AdminTab to="/admin" icon={<Package className="h-4 w-4" />} label="Products" exact />
         <AdminTab to="/admin/orders" icon={<ShoppingCart className="h-4 w-4" />} label="Orders" />
+        <AdminTab to="/admin/users" icon={<Users className="h-4 w-4" />} label="Users" />
       </nav>
       <Outlet />
     </div>
