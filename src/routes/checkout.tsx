@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CheckCircle2, Smartphone, Wallet, QrCode, Copy } from "lucide-react";
 import bharatpeQr from "@/assets/bharatpe-qr.jpg";
+import { BackendUnavailableNotice } from "@/components/BackendUnavailableNotice";
+import { isBackendConfigured } from "@/lib/backend";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Rainbow Sports" }] }),
@@ -60,6 +62,14 @@ function Checkout() {
     );
   }
 
+  if (!isBackendConfigured) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <BackendUnavailableNotice title="Checkout unavailable on this deploy" />
+      </div>
+    );
+  }
+
   const update = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const upiLink = `upi://pay?pa=${encodeURIComponent(BHARATPE_UPI)}&pn=${encodeURIComponent(BHARATPE_PAYEE_NAME)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent("Rainbow Sports order")}`;
@@ -79,6 +89,7 @@ function Checkout() {
       toast.error(parsed.error.issues[0]?.message ?? "Check your details");
       return;
     }
+
     setSubmitting(true);
     try {
       const {
@@ -86,7 +97,6 @@ function Checkout() {
       } = await supabase.auth.getSession();
       const currentUserId = session?.user?.id ?? null;
 
-      // PhonePe flow
       if (payment === "phonepe") {
         const result = await initiatePhonePePayment({
           data: {
@@ -113,11 +123,9 @@ function Checkout() {
         return;
       }
 
-      // BharatPe / UPI manual flow — record order as pending and let user pay via QR/UPI
-      const orderNotes = (form.notes ? form.notes + " | " : "") +
+      const orderNotes = (form.notes ? `${form.notes} | ` : "") +
         (payment === "bharatpe" ? `Paid via BharatPe UPI (${BHARATPE_UPI})` : "");
 
-      // COD or BharatPe — guest path
       if (!currentUserId) {
         const result = await createGuestOrder({
           data: {
@@ -137,7 +145,6 @@ function Checkout() {
         return;
       }
 
-      // Logged-in COD or BharatPe path
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -187,8 +194,7 @@ function Checkout() {
       <h1 className="mb-2 font-display text-5xl">CHECKOUT</h1>
       {!user && (
         <p className="mb-8 text-sm text-muted-foreground">
-          Checking out as guest.{" "}
-          <Link to="/auth" className="text-primary underline">Sign in</Link> to track your orders later.
+          Checking out as guest. <Link to="/auth" className="text-primary underline">Sign in</Link> to track your orders later.
         </p>
       )}
 
@@ -241,9 +247,7 @@ function Checkout() {
               type="button"
               onClick={() => setPayment("phonepe")}
               className={`flex w-full items-center gap-3 rounded-md border p-4 text-left transition ${
-                payment === "phonepe"
-                  ? "border-primary bg-primary/5 shadow-glow"
-                  : "border-border hover:border-primary/50"
+                payment === "phonepe" ? "border-primary bg-primary/5 shadow-glow" : "border-border hover:border-primary/50"
               }`}
             >
               <Smartphone className="h-5 w-5 text-primary" />
@@ -258,108 +262,91 @@ function Checkout() {
 
             <button
               type="button"
-              onClick={() => setPayment("bharatpe")}
-              className={`flex w-full items-center gap-3 rounded-md border p-4 text-left transition ${
-                payment === "bharatpe"
-                  ? "border-primary bg-primary/5 shadow-glow"
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <QrCode className="h-5 w-5 text-primary" />
-              <div className="flex-1">
-                <p className="font-bold">BharatPe / UPI</p>
-                <p className="text-xs text-muted-foreground">Scan QR or pay to UPI ID — any UPI app.</p>
-              </div>
-              <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                UPI
-              </span>
-            </button>
-
-            {payment === "bharatpe" && (
-              <div className="rounded-md border border-border bg-background p-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr] sm:items-center">
-                  <img
-                    src={bharatpeQr}
-                    alt="BharatPe UPI QR code for Rainbow Sports"
-                    className="mx-auto w-44 rounded-md border border-border bg-white"
-                  />
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">UPI ID</p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <code className="flex-1 break-all rounded bg-muted px-2 py-1 text-xs">{BHARATPE_UPI}</code>
-                        <Button type="button" size="sm" variant="outline" onClick={copyUpi}>
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Amount</p>
-                      <p className="font-display text-lg">₹{total.toFixed(0)}</p>
-                    </div>
-                    <a
-                      href={upiLink}
-                      className="inline-flex w-full items-center justify-center rounded-md border border-primary bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary hover:bg-primary/20 sm:w-auto"
-                    >
-                      Open UPI app
-                    </a>
-                    <p className="text-[11px] leading-relaxed text-muted-foreground">
-                      Scan the QR or pay to the UPI ID. After paying, click <b>Place order</b> below — we'll confirm payment manually.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <button
-              type="button"
               onClick={() => setPayment("cod")}
               className={`flex w-full items-center gap-3 rounded-md border p-4 text-left transition ${
-                payment === "cod"
-                  ? "border-primary bg-primary/5 shadow-glow"
-                  : "border-border hover:border-primary/50"
+                payment === "cod" ? "border-primary bg-primary/5 shadow-glow" : "border-border hover:border-primary/50"
               }`}
             >
               <Wallet className="h-5 w-5 text-primary" />
               <div className="flex-1">
                 <p className="font-bold">Cash on Delivery</p>
-                <p className="text-xs text-muted-foreground">Pay in cash when your jersey arrives.</p>
+                <p className="text-xs text-muted-foreground">Pay when your order arrives.</p>
               </div>
-              <CheckCircle2 className={`h-4 w-4 ${payment === "cod" ? "text-primary" : "text-transparent"}`} />
+              <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">
+                COD
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPayment("bharatpe")}
+              className={`flex w-full items-center gap-3 rounded-md border p-4 text-left transition ${
+                payment === "bharatpe" ? "border-primary bg-primary/5 shadow-glow" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <QrCode className="h-5 w-5 text-primary" />
+              <div className="flex-1">
+                <p className="font-bold">BharatPe QR / UPI</p>
+                <p className="text-xs text-muted-foreground">Scan QR or copy UPI ID and pay manually.</p>
+              </div>
+              <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                UPI
+              </span>
             </button>
           </div>
+
+          {payment === "bharatpe" && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+              <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
+                <CheckCircle2 className="h-4 w-4" /> BharatPe payment details
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-[140px_1fr] sm:items-center">
+                <img src={bharatpeQr} alt="BharatPe QR code for Rainbow Sports" className="w-full rounded-md border border-border" loading="lazy" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Scan the QR or pay this UPI ID:</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <code className="rounded bg-background px-3 py-2 text-sm">{BHARATPE_UPI}</code>
+                    <Button type="button" variant="outline" size="sm" onClick={copyUpi}>
+                      <Copy className="mr-2 h-4 w-4" /> Copy
+                    </Button>
+                    <a href={upiLink}>
+                      <Button type="button" size="sm" className="bg-gradient-primary text-primary-foreground">Open UPI app</Button>
+                    </a>
+                  </div>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    After placing the order, complete the payment from any UPI app and keep the screenshot for reference.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Button onClick={placeOrder} disabled={submitting} size="lg" className="h-14 w-full bg-gradient-primary font-bold uppercase tracking-wider text-primary-foreground shadow-glow">
+            {submitting ? "Processing..." : payment === "phonepe" ? "Continue to PhonePe" : "Place order"}
+          </Button>
         </div>
 
-        <div className="h-fit rounded-lg border border-border bg-card p-6">
-          <h2 className="font-display text-2xl">ORDER</h2>
-          <div className="mt-4 space-y-3 text-sm">
-            {items.map((i) => (
-              <div key={`${i.productId}-${i.size}`} className="flex justify-between gap-2">
-                <span>{i.name} <span className="text-muted-foreground">× {i.quantity} ({i.size})</span></span>
-                <span>₹{(i.price * i.quantity).toFixed(0)}</span>
+        <aside className="h-fit rounded-lg border border-border bg-card p-6">
+          <h2 className="font-display text-2xl">ORDER SUMMARY</h2>
+          <div className="mt-4 space-y-3">
+            {items.map((item) => (
+              <div key={`${item.productId}-${item.size}`} className="flex items-start justify-between gap-3 text-sm">
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-muted-foreground">{item.size} · Qty {item.quantity}</p>
+                </div>
+                <p className="font-medium">₹{(item.price * item.quantity).toFixed(0)}</p>
               </div>
             ))}
           </div>
-          <div className="my-4 border-t border-border" />
-          <div className="flex justify-between font-display text-2xl">
-            <span>Total</span>
-            <span>₹{total.toFixed(0)}</span>
+          <div className="mt-6 border-t border-border pt-4">
+            <div className="flex items-center justify-between font-display text-2xl">
+              <span>Total</span>
+              <span>₹{total.toFixed(0)}</span>
+            </div>
+            <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">Shipping calculated in final confirmation.</p>
           </div>
-          <Button
-            onClick={placeOrder}
-            disabled={submitting}
-            size="lg"
-            className="mt-6 h-12 w-full bg-gradient-primary font-bold uppercase tracking-wider text-primary-foreground shadow-glow"
-          >
-            {submitting
-              ? "Processing..."
-              : payment === "phonepe"
-                ? "Pay with PhonePe"
-                : payment === "bharatpe"
-                  ? "I've paid — Place order"
-                  : "Place order (COD)"}
-          </Button>
-        </div>
+        </aside>
       </div>
     </div>
   );
