@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { BackendUnavailableNotice } from "@/components/BackendUnavailableNotice";
+import { isBackendConfigured } from "@/lib/backend";
 
 export const Route = createFileRoute("/orders")({
   head: () => ({ meta: [{ title: "My orders — Rainbow Sports" }] }),
@@ -27,8 +29,12 @@ function Orders() {
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-    supabase
+    if (!isBackendConfigured || !user) {
+      setFetching(false);
+      return;
+    }
+
+    void supabase
       .from("orders")
       .select("id, tracking_number, created_at, total, status, payment_method, customer_name, city, order_items(product_name, quantity, size)")
       .order("created_at", { ascending: false })
@@ -37,6 +43,14 @@ function Orders() {
         setFetching(false);
       });
   }, [user]);
+
+  if (!isBackendConfigured) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+        <BackendUnavailableNotice title="Orders unavailable on this deploy" />
+      </div>
+    );
+  }
 
   if (loading) return <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">Loading...</div>;
 
