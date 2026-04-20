@@ -4,6 +4,7 @@ import { CheckCircle2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isBackendConfigured } from "@/lib/backend";
 
 export const Route = createFileRoute("/order-success/$id")({
   head: () => ({ meta: [{ title: "Order placed — Rainbow Sports" }] }),
@@ -25,7 +26,9 @@ function OrderSuccess() {
       return;
     }
 
-    supabase
+    if (!isBackendConfigured) return;
+
+    void supabase
       .from("orders")
       .select("tracking_number")
       .eq("id", id)

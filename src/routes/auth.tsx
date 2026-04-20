@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { BackendUnavailableNotice } from "@/components/BackendUnavailableNotice";
+import { isBackendConfigured } from "@/lib/backend";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Rainbow Sports" }] }),
@@ -28,6 +30,7 @@ function Auth() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isBackendConfigured) return toast.error("Authentication is unavailable on this deploy");
     if (!emailSchema.safeParse(email).success) return toast.error("Enter a valid email");
     if (!pwSchema.safeParse(password).success) return toast.error("Password must be 6+ characters");
 
@@ -56,6 +59,7 @@ function Auth() {
   };
 
   const sendReset = async () => {
+    if (!isBackendConfigured) return toast.error("Password reset is unavailable on this deploy");
     if (!emailSchema.safeParse(email).success)
       return toast.error("Enter your account email above first");
     setLoading(true);
@@ -72,6 +76,14 @@ function Auth() {
       setLoading(false);
     }
   };
+
+  if (!isBackendConfigured) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
+        <BackendUnavailableNotice title="Sign in unavailable on this deploy" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">

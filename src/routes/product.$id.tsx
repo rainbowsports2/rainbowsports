@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
 import type { Product } from "@/components/ProductCard";
+import { BackendUnavailableNotice } from "@/components/BackendUnavailableNotice";
+import { isBackendConfigured } from "@/lib/backend";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductDetail,
@@ -22,7 +24,12 @@ function ProductDetail() {
   const [activeImg, setActiveImg] = useState(0);
 
   useEffect(() => {
-    supabase
+    if (!isBackendConfigured) {
+      setLoading(false);
+      return;
+    }
+
+    void supabase
       .from("products")
       .select("*")
       .eq("id", id)
@@ -34,6 +41,14 @@ function ProductDetail() {
         setLoading(false);
       });
   }, [id]);
+
+  if (!isBackendConfigured) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+        <BackendUnavailableNotice title="Product details unavailable on this deploy" />
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">Loading...</div>;

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { BackendUnavailableNotice } from "@/components/BackendUnavailableNotice";
+import { isBackendConfigured } from "@/lib/backend";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({ meta: [{ title: "Reset password — Rainbow Sports" }] }),
@@ -22,14 +24,14 @@ function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Supabase puts the recovery token in the URL hash and exchanges it
-    // automatically via onAuthStateChange. Wait for a session to appear.
+    if (!isBackendConfigured) return;
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         setReady(true);
       }
     });
-    supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
     return () => sub.subscription.unsubscribe();
@@ -37,6 +39,7 @@ function ResetPassword() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isBackendConfigured) return toast.error("Password reset is unavailable on this deploy");
     if (!pwSchema.safeParse(password).success)
       return toast.error("Password must be 6+ characters");
     if (password !== confirm) return toast.error("Passwords don't match");
@@ -53,6 +56,14 @@ function ResetPassword() {
       setLoading(false);
     }
   };
+
+  if (!isBackendConfigured) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
+        <BackendUnavailableNotice title="Password reset unavailable on this deploy" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
