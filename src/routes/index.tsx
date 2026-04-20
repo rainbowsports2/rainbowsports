@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/hero-jerseys.jpg";
 import { ProductCard, type Product } from "@/components/ProductCard";
 import { YouTubeVideos } from "@/components/YouTubeVideos";
+import { BackendUnavailableNotice } from "@/components/BackendUnavailableNotice";
+import { isBackendConfigured } from "@/lib/backend";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,7 +24,9 @@ function Index() {
   const [slideIdx, setSlideIdx] = useState(0);
 
   useEffect(() => {
-    supabase
+    if (!isBackendConfigured) return;
+
+    void supabase
       .from("products")
       .select("*")
       .eq("is_active", true)
@@ -31,7 +35,6 @@ function Index() {
       .then(({ data }) => setFeatured((data ?? []) as Product[]));
   }, []);
 
-  // Collect recent jersey images for the hero slider
   const heroSlides = featured
     .map((p) => p.images?.[0])
     .filter((s): s is string => !!s)
@@ -45,7 +48,6 @@ function Index() {
 
   return (
     <div>
-      {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           {heroSlides.length > 0 ? (
@@ -89,7 +91,6 @@ function Index() {
         </div>
       </section>
 
-      {/* MARQUEE */}
       <section className="border-y border-primary/30 bg-primary/5 py-4 overflow-hidden">
         <div className="flex whitespace-nowrap animate-marquee">
           {Array.from({ length: 2 }).map((_, i) => (
@@ -107,7 +108,6 @@ function Index() {
         </div>
       </section>
 
-      {/* FEATURES */}
       <section className="border-b border-border bg-card/30">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6">
           {[
@@ -128,7 +128,6 @@ function Index() {
         </div>
       </section>
 
-      {/* FEATURED */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <div className="mb-10 flex items-end justify-between">
           <div>
@@ -139,7 +138,9 @@ function Index() {
             View all →
           </Link>
         </div>
-        {featured.length === 0 ? (
+        {!isBackendConfigured ? (
+          <BackendUnavailableNotice title="Catalog unavailable on this deploy" showHomeLink={false} />
+        ) : featured.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border p-16 text-center">
             <p className="text-muted-foreground">No jerseys yet. Admins can add products from the Admin panel.</p>
           </div>
@@ -150,7 +151,6 @@ function Index() {
         )}
       </section>
 
-      {/* YOUTUBE */}
       <YouTubeVideos />
     </div>
   );

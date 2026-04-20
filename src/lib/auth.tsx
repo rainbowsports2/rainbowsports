@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { isBackendConfigured } from "@/lib/backend";
 
 type AuthCtx = {
   user: User | null;
@@ -19,36 +20,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isBackendConfigured) {
+      setLoading(false);
+      return;
+    }
+
+    const syncAdminState = (nextUser: User | null) => {
+      if (!nextUser) {
+        setIsAdmin(false);
+        return;
+      }
+
+      void supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", nextUser.id)
+        .eq("role", "admin")
+        .maybeSingle()
+        .then(({ data }) => setIsAdmin(!!data));
+    };
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
-      if (sess?.user) {
-        setTimeout(() => {
-          supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", sess.user.id)
-            .eq("role", "admin")
-            .maybeSingle()
-            .then(({ data }) => setIsAdmin(!!data));
-        }, 0);
-      } else {
-        setIsAdmin(false);
-      }
+      syncAdminState(sess?.user ?? null);
     });
 
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+    void supabase.auth.getSession().then(({ data: { session: sess } }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
-      if (sess?.user) {
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", sess.user.id)
-          .eq("role", "admin")
-          .maybeSingle()
-          .then(({ data }) => setIsAdmin(!!data));
-      }
+      syncAdminState(sess?.user ?? null);
       setLoading(false);
     });
 
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    if (!isBackendConfigured) return;
     await supabase.auth.signOut();
   };
 
