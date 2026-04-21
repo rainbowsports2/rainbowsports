@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export function Footer() {
   return (
     <footer className="border-t border-border bg-card/30 py-10">
@@ -9,7 +11,12 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             Premium sports jerseys. Cash on Delivery available across India.
           </p>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Rainbow Sports</p>
+          <div className="flex flex-col items-center gap-1 md:items-end">
+            <Link to="/policies" className="text-xs font-bold uppercase tracking-wider text-primary hover:underline">
+              Return, Refund &amp; Privacy Policy
+            </Link>
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Rainbow Sports</p>
+          </div>
         </div>
       </div>
     </footer>
