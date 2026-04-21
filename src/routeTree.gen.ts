@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PoliciesRouteImport } from './routes/policies'
@@ -27,6 +28,11 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as ApiPhonepeCallbackRouteImport } from './routes/api.phonepe.callback'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/policies': typeof PoliciesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRoute
+  '/terms': typeof TermsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/users': typeof AdminUsersRoute
   '/order-success/$id': typeof OrderSuccessIdRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/policies': typeof PoliciesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRoute
+  '/terms': typeof TermsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/users': typeof AdminUsersRoute
   '/order-success/$id': typeof OrderSuccessIdRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/policies': typeof PoliciesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRoute
+  '/terms': typeof TermsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/users': typeof AdminUsersRoute
   '/order-success/$id': typeof OrderSuccessIdRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/reset-password'
     | '/shop'
+    | '/terms'
     | '/admin/orders'
     | '/admin/users'
     | '/order-success/$id'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/reset-password'
     | '/shop'
+    | '/terms'
     | '/admin/orders'
     | '/admin/users'
     | '/order-success/$id'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/reset-password'
     | '/shop'
+    | '/terms'
     | '/admin/orders'
     | '/admin/users'
     | '/order-success/$id'
@@ -240,6 +252,7 @@ export interface RootRouteChildren {
   PoliciesRoute: typeof PoliciesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ShopRoute: typeof ShopRoute
+  TermsRoute: typeof TermsRoute
   OrderSuccessIdRoute: typeof OrderSuccessIdRoute
   PaymentFailedIdRoute: typeof PaymentFailedIdRoute
   ProductIdRoute: typeof ProductIdRoute
@@ -248,6 +261,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -395,6 +415,7 @@ const rootRouteChildren: RootRouteChildren = {
   PoliciesRoute: PoliciesRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ShopRoute: ShopRoute,
+  TermsRoute: TermsRoute,
   OrderSuccessIdRoute: OrderSuccessIdRoute,
   PaymentFailedIdRoute: PaymentFailedIdRoute,
   ProductIdRoute: ProductIdRoute,
