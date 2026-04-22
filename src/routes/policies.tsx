@@ -27,6 +27,21 @@ function Policies() {
         Return, replacement, refund and privacy information.
       </p>
 
+      <Section title="Shipping Policy">
+        <p>We aim to dispatch all orders promptly and deliver them within the estimated time frame.</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Orders are typically delivered within <strong>10 to 15 business days</strong> from the date of order confirmation and/or payment.</li>
+          <li>Delivery time may vary depending on your location, the courier service performance, or unforeseen delays.</li>
+          <li>Once your order is shipped, you will receive tracking details via email or SMS.</li>
+          <li>We are not responsible for delays caused by courier services or force majeure events (e.g., natural disasters, strikes, or government restrictions).</li>
+        </ul>
+        <p className="font-semibold">Shipping Charges:</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Shipping fees (if applicable) will be calculated and displayed at checkout.</li>
+          <li>Free shipping may be available on select items or order values.</li>
+        </ul>
+      </Section>
+
       <Section title="Return Policy">
         <p>
           We offer a <strong>7-day return window</strong>, which means you can request a return within 7 days of receiving your item.
