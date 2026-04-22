@@ -15,6 +15,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PoliciesRouteImport } from './routes/policies'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as CustomRouteImport } from './routes/custom'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -56,6 +57,11 @@ const OrdersRoute = OrdersRouteImport.update({
 const CustomRoute = CustomRouteImport.update({
   id: '/custom',
   path: '/custom',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/custom': typeof CustomRoute
   '/orders': typeof OrdersRoute
   '/policies': typeof PoliciesRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/custom': typeof CustomRoute
   '/orders': typeof OrdersRoute
   '/policies': typeof PoliciesRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/contact': typeof ContactRoute
   '/custom': typeof CustomRoute
   '/orders': typeof OrdersRoute
   '/policies': typeof PoliciesRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/contact'
     | '/custom'
     | '/orders'
     | '/policies'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/contact'
     | '/custom'
     | '/orders'
     | '/policies'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/contact'
     | '/custom'
     | '/orders'
     | '/policies'
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
+  ContactRoute: typeof ContactRoute
   CustomRoute: typeof CustomRoute
   OrdersRoute: typeof OrdersRoute
   PoliciesRoute: typeof PoliciesRoute
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       path: '/custom'
       fullPath: '/custom'
       preLoaderRoute: typeof CustomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -410,6 +430,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
+  ContactRoute: ContactRoute,
   CustomRoute: CustomRoute,
   OrdersRoute: OrdersRoute,
   PoliciesRoute: PoliciesRoute,
