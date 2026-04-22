@@ -20,6 +20,10 @@ export function Footer() {
               <Link to="/terms" className="text-xs font-bold uppercase tracking-wider text-primary hover:underline">
                 Terms &amp; Conditions
               </Link>
+              <span className="text-xs text-muted-foreground">·</span>
+              <Link to="/contact" className="text-xs font-bold uppercase tracking-wider text-primary hover:underline">
+                Contact
+              </Link>
             </div>
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Rainbow Sports</p>
           </div>
