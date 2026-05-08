@@ -65,6 +65,9 @@ export type Database = {
       orders: {
         Row: {
           address: string
+          cashfree_order_id: string | null
+          cashfree_payment_session_id: string | null
+          cashfree_response: Json | null
           city: string
           created_at: string
           customer_name: string
@@ -86,6 +89,9 @@ export type Database = {
         }
         Insert: {
           address: string
+          cashfree_order_id?: string | null
+          cashfree_payment_session_id?: string | null
+          cashfree_response?: Json | null
           city: string
           created_at?: string
           customer_name: string
@@ -107,6 +113,9 @@ export type Database = {
         }
         Update: {
           address?: string
+          cashfree_order_id?: string | null
+          cashfree_payment_session_id?: string | null
+          cashfree_response?: Json | null
           city?: string
           created_at?: string
           customer_name?: string
@@ -249,7 +258,7 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
-      payment_method: "cod" | "phonepe"
+      payment_method: "cod" | "phonepe" | "cashfree"
       payment_status: "pending" | "paid" | "failed" | "refunded"
     }
     CompositeTypes: {
@@ -386,7 +395,7 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
-      payment_method: ["cod", "phonepe"],
+      payment_method: ["cod", "phonepe", "cashfree"],
       payment_status: ["pending", "paid", "failed", "refunded"],
     },
   },
