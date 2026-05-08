@@ -258,7 +258,7 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
-      payment_method: "cod" | "phonepe"
+      payment_method: "cod" | "phonepe" | "cashfree"
       payment_status: "pending" | "paid" | "failed" | "refunded"
     }
     CompositeTypes: {
@@ -395,7 +395,7 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
-      payment_method: ["cod", "phonepe"],
+      payment_method: ["cod", "phonepe", "cashfree"],
       payment_status: ["pending", "paid", "failed", "refunded"],
     },
   },
