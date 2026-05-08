@@ -65,6 +65,9 @@ export type Database = {
       orders: {
         Row: {
           address: string
+          cashfree_order_id: string | null
+          cashfree_payment_session_id: string | null
+          cashfree_response: Json | null
           city: string
           created_at: string
           customer_name: string
@@ -86,6 +89,9 @@ export type Database = {
         }
         Insert: {
           address: string
+          cashfree_order_id?: string | null
+          cashfree_payment_session_id?: string | null
+          cashfree_response?: Json | null
           city: string
           created_at?: string
           customer_name: string
@@ -107,6 +113,9 @@ export type Database = {
         }
         Update: {
           address?: string
+          cashfree_order_id?: string | null
+          cashfree_payment_session_id?: string | null
+          cashfree_response?: Json | null
           city?: string
           created_at?: string
           customer_name?: string
