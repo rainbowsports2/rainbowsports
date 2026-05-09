@@ -1,1 +1,7 @@
 project_id = "elipqjcaojwcvfwtarpf"
+
+[functions.cashfree-callback]
+verify_jwt = false
+
+[functions.cashfree-webhook]
+verify_jwt = false
