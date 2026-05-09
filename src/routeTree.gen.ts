@@ -29,6 +29,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as ApiPhonepeCallbackRouteImport } from './routes/api.phonepe.callback'
 import { Route as ApiCashfreeCallbackRouteImport } from './routes/api.cashfree.callback'
+import { Route as ApiPublicCashfreeWebhookRouteImport } from './routes/api.public.cashfree.webhook'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -130,6 +131,12 @@ const ApiCashfreeCallbackRoute = ApiCashfreeCallbackRouteImport.update({
   path: '/api/cashfree/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCashfreeWebhookRoute =
+  ApiPublicCashfreeWebhookRouteImport.update({
+    id: '/api/public/cashfree/webhook',
+    path: '/api/public/cashfree/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/api/cashfree/callback': typeof ApiCashfreeCallbackRoute
   '/api/phonepe/callback': typeof ApiPhonepeCallbackRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -173,6 +181,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/api/cashfree/callback': typeof ApiCashfreeCallbackRoute
   '/api/phonepe/callback': typeof ApiPhonepeCallbackRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -196,6 +205,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/api/cashfree/callback': typeof ApiCashfreeCallbackRoute
   '/api/phonepe/callback': typeof ApiPhonepeCallbackRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/cashfree/callback'
     | '/api/phonepe/callback'
+    | '/api/public/cashfree/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/cashfree/callback'
     | '/api/phonepe/callback'
+    | '/api/public/cashfree/webhook'
   id:
     | '__root__'
     | '/'
@@ -263,6 +275,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/cashfree/callback'
     | '/api/phonepe/callback'
+    | '/api/public/cashfree/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -283,6 +296,7 @@ export interface RootRouteChildren {
   ProductIdRoute: typeof ProductIdRoute
   ApiCashfreeCallbackRoute: typeof ApiCashfreeCallbackRoute
   ApiPhonepeCallbackRoute: typeof ApiPhonepeCallbackRoute
+  ApiPublicCashfreeWebhookRoute: typeof ApiPublicCashfreeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -427,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCashfreeCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cashfree/webhook': {
+      id: '/api/public/cashfree/webhook'
+      path: '/api/public/cashfree/webhook'
+      fullPath: '/api/public/cashfree/webhook'
+      preLoaderRoute: typeof ApiPublicCashfreeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -462,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductIdRoute: ProductIdRoute,
   ApiCashfreeCallbackRoute: ApiCashfreeCallbackRoute,
   ApiPhonepeCallbackRoute: ApiPhonepeCallbackRoute,
+  ApiPublicCashfreeWebhookRoute: ApiPublicCashfreeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
