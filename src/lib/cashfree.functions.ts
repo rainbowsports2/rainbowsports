@@ -114,8 +114,8 @@ export const initiateCashfreePayment = createServerFn({ method: "POST" })
         customer_phone: phoneDigits || "9999999999",
       },
       order_meta: {
-        return_url: `${data.origin}/api/cashfree/callback?order=${order.id}`,
-        notify_url: `${data.origin}/api/cashfree/callback?order=${order.id}`,
+        return_url: `${process.env.SUPABASE_URL}/functions/v1/cashfree-callback?order=${order.id}`,
+        notify_url: `${process.env.SUPABASE_URL}/functions/v1/cashfree-webhook`,
       },
       order_note: `Rainbow Sports order ${order.tracking_number || order.id}`,
     };
